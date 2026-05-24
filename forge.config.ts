@@ -29,7 +29,7 @@ const config: ForgeConfig = {
     new PublisherGithub({
       repository: {
         owner: 'Rodrigomsdevs',
-        name: 'rodlauncher',
+        name: 'RodLuncher',
       },
       prerelease: false,
       draft: true,

@@ -20,7 +20,7 @@ export default defineConfig({
     strictPort: false,
   },
   build: {
-    outDir: '../../.vite/renderer',
+    outDir: '../../.vite/renderer/main_window',
     emptyOutDir: true,
   },
   clearScreen: false,
