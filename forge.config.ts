@@ -22,8 +22,22 @@ const config: ForgeConfig = {
       noMsi: true,
     }),
     new MakerZIP({}, ['darwin']),
-    new MakerRpm({}),
-    new MakerDeb({}),
+    new MakerRpm({
+      options: {
+        name: 'rodlauncher',
+        productName: 'RodLauncher',
+        bin: 'RodLauncher',
+        categories: ['Game'],
+      },
+    }),
+    new MakerDeb({
+      options: {
+        name: 'rodlauncher',
+        productName: 'RodLauncher',
+        bin: 'RodLauncher',
+        categories: ['Game'],
+      },
+    }),
   ],
   publishers: [
     new PublisherGithub({
