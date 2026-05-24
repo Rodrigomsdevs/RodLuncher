@@ -1,6 +1,5 @@
 import { AutoUnpackNativesPlugin } from '@electron-forge/plugin-auto-unpack-natives';
 import { VitePlugin } from '@electron-forge/plugin-vite';
-import { PublisherGithub } from '@electron-forge/publisher-github';
 import type { ForgeConfig } from '@electron-forge/shared-types';
 import { MakerSquirrel } from '@electron-forge/maker-squirrel';
 import { MakerZIP } from '@electron-forge/maker-zip';
@@ -37,17 +36,6 @@ const config: ForgeConfig = {
         bin: 'RodLauncher',
         categories: ['Game'],
       },
-    }),
-  ],
-  publishers: [
-    new PublisherGithub({
-      repository: {
-        owner: 'Rodrigomsdevs',
-        name: 'RodLuncher',
-      },
-      prerelease: false,
-      draft: true,
-      generateReleaseNotes: true,
     }),
   ],
   plugins: [

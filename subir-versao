@@ -1,4 +1,4 @@
 git add .
-git commit -m "versao 1.0.5"
-git tag v1.0.5
+git commit -m "versao 1.0.6"
+git tag v1.0.6
 git push origin main --tags
