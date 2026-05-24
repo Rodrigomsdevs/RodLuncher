@@ -22,7 +22,7 @@ const config: ForgeConfig = {
       setupIcon: 'src/renderer/assets/icon.ico',
       noMsi: true,
     }),
-    new MakerZIP({}, ['darwin']),
+    new MakerZIP({}, ['darwin', 'win32']),
     new MakerRpm({
       options: {
         name: 'rodlauncher',

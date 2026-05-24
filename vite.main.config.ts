@@ -5,7 +5,7 @@ export default defineConfig({
     sourcemap: true,
     minify: false,
     rollupOptions: {
-      external: ['electron', '@xmcl/core', '@xmcl/installer'],
+      external: ['electron'],
     },
   },
 });

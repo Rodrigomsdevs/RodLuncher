@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import {
@@ -12,6 +13,10 @@ import type { LaunchOptions } from '../shared/types';
 
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string | undefined;
 declare const MAIN_WINDOW_VITE_NAME: string;
+
+if (handleWindowsSquirrelEvent()) {
+  app.quit();
+}
 
 const createWindow = async () => {
   const mainWindow = new BrowserWindow({
@@ -52,6 +57,41 @@ function getWindowIconPath() {
   ];
 
   return candidates.find((candidate) => existsSync(candidate)) ?? candidates[0];
+}
+
+function handleWindowsSquirrelEvent() {
+  if (process.platform !== 'win32') return false;
+
+  const squirrelEvent = process.argv[1];
+  if (!squirrelEvent?.startsWith('--squirrel-')) return false;
+
+  const updateExe = path.resolve(path.dirname(process.execPath), '..', 'Update.exe');
+  const exeName = path.basename(process.execPath);
+  const shortcutLocations = 'Desktop,StartMenu';
+
+  const runUpdate = (args: string[]) => {
+    try {
+      spawn(updateExe, args, { detached: true });
+    } catch {
+      // Squirrel events should never open the app UI, even if shortcut creation fails.
+    }
+  };
+
+  switch (squirrelEvent) {
+    case '--squirrel-install':
+    case '--squirrel-updated':
+      runUpdate(['--createShortcut', exeName, '--shortcut-locations', shortcutLocations]);
+      setTimeout(() => app.quit(), 1000);
+      return true;
+    case '--squirrel-uninstall':
+      runUpdate(['--removeShortcut', exeName, '--shortcut-locations', shortcutLocations]);
+      setTimeout(() => app.quit(), 1000);
+      return true;
+    case '--squirrel-obsolete':
+      return true;
+    default:
+      return false;
+  }
 }
 
 app.whenReady().then(async () => {
