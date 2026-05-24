@@ -1,173 +1,131 @@
 # RodLauncher
 
-![Electron](https://img.shields.io/badge/Electron-modern-47848F?style=for-the-badge&logo=electron&logoColor=white)
-![React](https://img.shields.io/badge/React-TypeScript-61DAFB?style=for-the-badge&logo=react&logoColor=111)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38BDF8?style=for-the-badge&logo=tailwindcss&logoColor=white)
-![Minecraft](https://img.shields.io/badge/Minecraft-Java-5A9E4B?style=for-the-badge)
+![RodLauncher](docs/preview.png)
 
-**RodLauncher** e um launcher desktop moderno para Minecraft Java, criado com Electron, React, TypeScript e Tailwind CSS 4. Ele lista versoes oficiais da Mojang, prepara uma instancia local isolada, mostra preview 3D de skin e oferece uma interface premium inspirada no visual do Minecraft.
+![Windows](https://img.shields.io/badge/Windows-Desktop-2563EB?style=for-the-badge&logo=windows&logoColor=white)
+![Minecraft Java](https://img.shields.io/badge/Minecraft-Java-5A9E4B?style=for-the-badge)
+![Status](https://img.shields.io/badge/status-em%20desenvolvimento-D9A441?style=for-the-badge)
 
-> Projeto educacional e experimental. O RodLauncher nao redistribui arquivos do Minecraft e nao contorna autenticacao, licencas ou termos da Mojang/Microsoft. A implementacao atual inicia o jogo em modo demo/local. Para uso completo em producao, integre autenticacao oficial Microsoft/Minecraft.
+**RodLauncher** e um launcher desktop moderno para Minecraft Java, feito para quem quer escolher nick, versao e skin em uma interface bonita, rapida e simples.
 
-## Preview
+Ele baixa arquivos oficiais da Mojang, mostra preview 3D da skin, detecta versoes ja instaladas e prepara tudo em poucos cliques.
 
-Adicione aqui um screenshot do app depois de rodar:
+> Projeto independente. O RodLauncher nao e afiliado, aprovado ou endossado pela Mojang Studios ou Microsoft.
 
-```md
-![RodLauncher preview](./docs/preview.png)
-```
+## O Que Ele Faz
 
-## Recursos
+- Escolha de nickname direto na tela inicial.
+- Lista de versoes carregada automaticamente pela Mojang.
+- Suporte a releases e snapshots.
+- Deteccao de versoes ja instaladas na sua `.minecraft`.
+- Download de versoes quando necessario.
+- Preview 3D da skin no launcher.
+- Upload de skin PNG personalizada.
+- Barra de progresso durante download/preparacao.
+- Tema escuro moderno inspirado em Minecraft.
+- Interface com glassmorphism, blur e detalhes verdes.
 
-- Interface Electron sem borda com titlebar customizada.
-- React + TypeScript no renderer.
-- Tailwind CSS 4 via plugin oficial do Vite.
-- Listagem de versoes pelo manifesto oficial da Mojang.
-- Filtro de releases e snapshots.
-- Indicador de versao instalada localmente.
-- Instalacao de client, assets e bibliotecas com `@xmcl/installer`.
-- Launch com `@xmcl/core` em modo demo/local.
-- Preview 3D interativo com `skinview3d`.
-- Upload de skin PNG local com atualizacao instantanea.
-- Barra de progresso via IPC entre main process e renderer.
-- Tratamento de erros para nick invalido, falha de rede e Java ausente.
+## Como Usar
 
-## Stack
+1. Abra o RodLauncher.
+2. Digite seu nickname.
+3. Escolha uma versao do Minecraft.
+4. Opcionalmente, carregue uma skin PNG personalizada.
+5. Clique em **Jogar**.
 
-- Electron Forge
-- Vite
-- React
-- TypeScript
-- Tailwind CSS 4
-- Framer Motion
-- Lucide React
-- skinview3d
-- `@xmcl/installer`
-- `@xmcl/core`
+Se a versao escolhida ainda nao estiver instalada, o RodLauncher baixa os arquivos oficiais antes de iniciar.
 
-## Estrutura
+## Download
 
-```text
-rodlauncher/
-├── forge.config.ts
-├── vite.main.config.ts
-├── vite.preload.config.ts
-├── vite.renderer.config.ts
-├── tailwind.config.ts
-├── src/
-│   ├── main/
-│   │   ├── index.ts
-│   │   ├── preload.ts
-│   │   └── minecraft.ts
-│   ├── renderer/
-│   │   ├── App.tsx
-│   │   ├── index.html
-│   │   ├── main.tsx
-│   │   ├── components/
-│   │   ├── styles/
-│   │   └── assets/
-│   └── shared/
-│       └── types.ts
-└── README.md
-```
+Quando houver uma versao pronta, baixe pela aba **Releases** do GitHub:
+
+[Baixar RodLauncher](https://github.com/Rodrigomsdevs/rodlauncher/releases)
+
+Se ainda nao houver release publicada, o projeto esta em fase de desenvolvimento.
 
 ## Requisitos
 
-- Node.js 20+
-- npm 10+
-- Java 17+ no PATH
+- Windows 10 ou Windows 11.
+- Java instalado.
+- Conexao com a internet para baixar versoes.
 
-Caso o Java nao esteja no PATH, crie um `.env` baseado no `.env.example` ou defina a variavel antes de iniciar:
+Para versoes recentes do Minecraft, use Java 21 ou superior.
 
-```bash
-RODLAUNCHER_JAVA="C:\Program Files\Eclipse Adoptium\jdk-21\bin\java.exe"
+Recomendado:
+
+[Baixar Java pela Adoptium](https://adoptium.net/)
+
+## Skin
+
+O RodLauncher mostra uma skin 3D interativa dentro do app.
+
+Por padrao, ele tenta usar uma skin baseada no nickname. Se voce quiser uma skin propria, clique no botao de upload e selecione um arquivo `.png`.
+
+## Onde Os Arquivos Ficam
+
+O launcher usa uma pasta propria para dados do app e tambem verifica a `.minecraft` padrao do Windows para evitar baixar de novo uma versao que voce ja possui.
+
+Pasta comum do Minecraft no Windows:
+
+```text
+C:\Users\SEU_USUARIO\AppData\Roaming\.minecraft
 ```
 
-Se voce ja tem versoes baixadas em outra pasta, informe essa pasta para o RodLauncher verificar antes de baixar de novo:
+## Problemas Comuns
 
-```bash
-RODLAUNCHER_MINECRAFT_DIR="C:\Users\seu-usuario\AppData\Roaming\.minecraft"
+**O Minecraft nao abre**
+
+Verifique se o Java esta instalado. Versoes novas do Minecraft podem exigir Java 21+.
+
+**A versao aparece como "Baixar" mesmo ja estando instalada**
+
+Confirme se a versao existe dentro da pasta:
+
+```text
+.minecraft\versions
 ```
 
-## Instalar
+**Minha skin nao carregou**
+
+Use uma skin no formato PNG padrao do Minecraft.
+
+## Para Desenvolvedores
+
+Quer rodar o projeto pelo codigo-fonte?
 
 ```bash
 npm install
-```
-
-## Rodar em desenvolvimento
-
-```bash
 npm start
 ```
 
-## Build
+Gerar build:
 
 ```bash
 npm run make
 ```
 
-Os artefatos ficam em:
-
-```text
-out/
-```
-
-## Scripts
+Validar codigo:
 
 ```bash
-npm start       # abre o app em modo desenvolvimento
-npm run make    # gera instalador/pacote
-npm run package # empacota sem gerar instalador
 npm run typecheck
 npm run lint
 ```
 
-## Como funciona
+## Tecnologias
 
-O renderer chama APIs seguras expostas pelo preload:
+- Electron
+- React
+- TypeScript
+- Tailwind CSS
+- skinview3d
+- XMCL
+- Vite
 
-```ts
-window.rodlauncher.listVersions();
-window.rodlauncher.installVersion(versionId);
-window.rodlauncher.launchGame({ username, versionId });
-window.rodlauncher.onInstallProgress(callback);
-```
+## Aviso Legal
 
-O main process centraliza:
+Minecraft e uma marca da Mojang/Microsoft. Este projeto e independente e foi criado para fins educacionais e de uso pessoal.
 
-- busca do manifesto oficial da Mojang;
-- verificacao da pasta local da instancia;
-- instalacao com `@xmcl/installer`;
-- launch com `@xmcl/core`;
-- eventos de progresso enviados ao renderer.
-
-## Pasta local do Minecraft
-
-O RodLauncher usa uma instancia isolada dentro de `app.getPath("userData")` para saves/logs do app, mas verifica tambem a `.minecraft` oficial do sistema e a pasta opcional `RODLAUNCHER_MINECRAFT_DIR` antes de baixar uma versao.
-
-## Fontes e APIs
-
-- Manifesto oficial de versoes da Mojang:
-  `https://piston-meta.mojang.com/mc/game/version_manifest_v2.json`
-- Documentacao do XMCL:
-  `https://xmcl.app/en/core/`
-- Skin fallback:
-  `https://minotar.net/skin/Steve`
-
-## Roadmap
-
-- Integracao com autenticacao Microsoft/Minecraft.
-- Seletor de memoria RAM.
-- Multiplas instancias.
-- Suporte a Fabric/Forge.
-- Tela de logs.
-- Gerenciamento de mods.
-- Screenshot automatica para README.
-
-## Aviso legal
-
-Minecraft e uma marca da Mojang/Microsoft. Este projeto nao e afiliado, aprovado ou endossado pela Mojang Studios ou Microsoft. Use somente com arquivos oficiais e respeitando os termos do jogo.
+O RodLauncher nao redistribui arquivos do Minecraft. Os downloads devem vir de fontes oficiais da Mojang.
 
 ## Licenca
 

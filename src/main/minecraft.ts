@@ -1,8 +1,8 @@
 import { app } from 'electron';
-import { spawn } from 'node:child_process';
+import { ChildProcess, spawn } from 'node:child_process';
 import crypto from 'node:crypto';
 import { existsSync } from 'node:fs';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type {
   InstallPhase,
@@ -34,6 +34,12 @@ interface MinecraftRootCandidate {
 interface InstalledVersion {
   root: MinecraftRootCandidate;
   versionPath: string;
+}
+
+interface JavaResolution {
+  path: string;
+  majorVersion: number;
+  rawVersion: string;
 }
 
 let cachedManifest: VersionManifest | null = null;
@@ -143,7 +149,8 @@ export async function launchGame(
     versionId: options.versionId,
   });
 
-  const javaPath = await resolveJavaPath();
+  const requiredJavaMajor = await getRequiredJavaMajor(installedVersion);
+  const java = await resolveJavaPath(requiredJavaMajor);
 
   onProgress?.({
     phase: 'launching',
@@ -152,14 +159,14 @@ export async function launchGame(
     versionId: options.versionId,
   });
 
-  const { launch } = await import('@xmcl/core');
+  const { createMinecraftProcessWatcher, launch } = await import('@xmcl/core');
   const minecraftRoot = getMinecraftRoot();
   await mkdir(minecraftRoot, { recursive: true });
 
-  const process = await launch({
+  const childProcess = await launch({
     gamePath: minecraftRoot,
     resourcePath: installedVersion.root.path,
-    javaPath,
+    javaPath: java.path,
     version: options.versionId,
     gameProfile: {
       name: username,
@@ -174,17 +181,17 @@ export async function launchGame(
     minMemory: options.memory?.min ?? 512,
     maxMemory: options.memory?.max ?? 2048,
     extraExecOption: {
-      detached: true,
-      stdio: 'ignore',
+      detached: false,
+      stdio: ['ignore', 'pipe', 'pipe'],
     },
   } as any);
 
-  process.unref();
+  await waitForMinecraftStartup(childProcess, createMinecraftProcessWatcher, options.versionId, onProgress);
 
   return {
-    pid: process.pid,
+    pid: childProcess.pid,
     mode: 'demo-local',
-    message: 'Minecraft foi iniciado em modo demo/local.',
+    message: `Processo do Minecraft iniciado com Java ${java.majorVersion || 'detectado'}.`,
   };
 }
 
@@ -288,6 +295,103 @@ function getDefaultMinecraftRoot() {
   return path.join(app.getPath('home'), '.minecraft');
 }
 
+async function getRequiredJavaMajor(installedVersion: InstalledVersion) {
+  const versionId = path.basename(installedVersion.versionPath);
+  const versionJsonPath = path.join(installedVersion.versionPath, `${versionId}.json`);
+
+  try {
+    const versionJson = JSON.parse(await readFile(versionJsonPath, 'utf-8')) as {
+      javaVersion?: {
+        majorVersion?: number;
+      };
+    };
+
+    return versionJson.javaVersion?.majorVersion;
+  } catch {
+    return undefined;
+  }
+}
+
+function waitForMinecraftStartup(
+  childProcess: ChildProcess,
+  createMinecraftProcessWatcher: (process: ChildProcess) => NodeJS.EventEmitter,
+  versionId: string,
+  onProgress?: ProgressCallback,
+) {
+  let recentOutput = '';
+
+  const collectOutput = (chunk: Buffer) => {
+    recentOutput = `${recentOutput}${chunk.toString()}`.slice(-3200);
+  };
+
+  childProcess.stdout?.on('data', collectOutput);
+  childProcess.stderr?.on('data', collectOutput);
+
+  const watcher = createMinecraftProcessWatcher(childProcess);
+
+  return new Promise<void>((resolve, reject) => {
+    let settled = false;
+
+    const finish = (callback: () => void) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      callback();
+    };
+
+    const timeout = setTimeout(() => {
+      finish(() => {
+        onProgress?.({
+          phase: 'ready',
+          status: 'Minecraft continua em execucao. Se a janela nao aparecer, veja o erro no console.',
+          percentage: 100,
+          versionId,
+        });
+        resolve();
+      });
+    }, 8000);
+
+    watcher.once('minecraft-window-ready', () => {
+      finish(() => {
+        onProgress?.({
+          phase: 'ready',
+          status: 'Janela do Minecraft detectada.',
+          percentage: 100,
+          versionId,
+        });
+        resolve();
+      });
+    });
+
+    childProcess.once('error', (error) => {
+      finish(() => reject(error));
+    });
+
+    childProcess.once('exit', (code, signal) => {
+      finish(() => {
+        const exitReason = signal ? `sinal ${signal}` : `codigo ${code ?? 'desconhecido'}`;
+        const output = simplifyMinecraftOutput(recentOutput);
+
+        reject(
+          new Error(
+            `Minecraft fechou antes de abrir (${exitReason}).${output ? ` Ultima saida: ${output}` : ''}`,
+          ),
+        );
+      });
+    });
+  });
+}
+
+function simplifyMinecraftOutput(output: string) {
+  return output
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .slice(-8)
+    .join(' | ')
+    .slice(0, 1100);
+}
+
 function emitTaskProgress(
   rootTask: any,
   task: any,
@@ -361,10 +465,10 @@ function createStableUuid(username: string) {
   ].join('-');
 }
 
-async function resolveJavaPath() {
+async function resolveJavaPath(requiredMajor?: number): Promise<JavaResolution> {
   const preferredJava = process.env.RODLAUNCHER_JAVA?.trim() || 'java';
 
-  await new Promise<void>((resolve, reject) => {
+  const rawVersion = await new Promise<string>((resolve, reject) => {
     const child = spawn(preferredJava, ['-version']);
     let output = '';
 
@@ -383,7 +487,7 @@ async function resolveJavaPath() {
     });
     child.on('close', (code) => {
       if (code === 0) {
-        resolve();
+        resolve(output);
         return;
       }
 
@@ -391,7 +495,32 @@ async function resolveJavaPath() {
     });
   });
 
-  return preferredJava;
+  const majorVersion = parseJavaMajorVersion(rawVersion);
+
+  if (requiredMajor && majorVersion && majorVersion < requiredMajor) {
+    throw new Error(
+      `Esta versao do Minecraft exige Java ${requiredMajor}+, mas o launcher encontrou Java ${majorVersion}. Instale Java ${requiredMajor}+ ou defina RODLAUNCHER_JAVA.`,
+    );
+  }
+
+  return {
+    path: preferredJava,
+    majorVersion: majorVersion || 0,
+    rawVersion,
+  };
+}
+
+function parseJavaMajorVersion(output: string) {
+  const match = output.match(/version "(?<version>\d+(?:\.\d+)?)/);
+  const version = match?.groups?.version;
+
+  if (!version) return 0;
+
+  if (version.startsWith('1.')) {
+    return Number(version.split('.')[1]) || 0;
+  }
+
+  return Number(version.split('.')[0]) || 0;
 }
 
 function getErrorMessage(error: unknown) {

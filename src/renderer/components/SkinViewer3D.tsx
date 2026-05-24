@@ -71,7 +71,7 @@ export default function SkinViewer3D({
   }
 
   return (
-    <div className="flex h-full min-h-[620px] flex-col max-lg:min-h-[560px]">
+    <div className="flex h-full min-h-[620px] flex-col max-lg:min-h-[520px]">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-xs font-semibold uppercase tracking-[0.24em] text-moss">Skin</div>
@@ -98,9 +98,10 @@ export default function SkinViewer3D({
         </div>
       </div>
 
-      <div className="relative grid flex-1 place-items-center overflow-hidden rounded-[24px] border border-white/10 bg-[radial-gradient(circle_at_center,rgba(90,158,75,.18),transparent_58%),linear-gradient(180deg,rgba(255,255,255,.07),rgba(0,0,0,.1))]">
-        <canvas ref={canvasRef} className="h-full max-h-[460px] w-full max-w-[340px]" />
-        <div className="pointer-events-none absolute bottom-7 h-7 w-40 rounded-[50%] bg-black/35 blur-md" />
+      <div className="relative grid flex-1 place-items-center overflow-visible">
+        <div className="pointer-events-none absolute h-[78%] w-[82%] rounded-full bg-moss/20 blur-3xl" />
+        <div className="pointer-events-none absolute bottom-12 h-28 w-56 rounded-full bg-black/35 blur-2xl" />
+        <canvas ref={canvasRef} className="relative z-10 h-full max-h-[460px] w-full max-w-[340px]" />
       </div>
 
       <input
@@ -111,20 +112,7 @@ export default function SkinViewer3D({
         onChange={(event) => handleSkinFile(event.target.files?.[0])}
       />
 
-      <div className="mt-4 grid grid-cols-2 gap-3">
-        <div className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3">
-          <div className="text-xs uppercase tracking-[0.18em] text-zinc-500">Origem</div>
-          <div className="truncate text-sm font-semibold text-zinc-100">
-            {hasCustomSkin ? 'Arquivo local' : 'Minotar / Steve'}
-          </div>
-        </div>
-        <div className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3">
-          <div className="text-xs uppercase tracking-[0.18em] text-zinc-500">Modelo</div>
-          <div className="text-sm font-semibold text-zinc-100">3D interativo</div>
-        </div>
-      </div>
-
-      <div className="mt-2 h-4 text-xs text-ember">{skinError}</div>
+      <div className="mt-3 h-4 text-xs text-ember">{skinError}</div>
     </div>
   );
 }
