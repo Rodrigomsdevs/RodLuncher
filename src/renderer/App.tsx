@@ -14,6 +14,7 @@ import ProgressBar from './components/ProgressBar';
 import SkinViewer3D from './components/SkinViewer3D';
 import TitleBar from './components/TitleBar';
 import VersionSelector from './components/VersionSelector';
+import logo from './assets/logo.png';
 
 const DEFAULT_SKIN_URL = 'https://minotar.net/skin/Steve';
 const NICKNAME_PATTERN = /^[A-Za-z0-9_]{3,16}$/;
@@ -120,42 +121,36 @@ export default function App() {
   const showProgress = isBusy && progress.phase !== 'idle';
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-[#080d08] text-white">
+    <div className="flex h-screen flex-col overflow-hidden bg-night text-white">
       <TitleBar />
 
       <div className="relative flex min-h-0 flex-1">
         {/* Background */}
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_20%_50%,rgba(90,158,75,0.06),transparent)]" />
-        <div className="pointer-events-none absolute inset-0 opacity-[0.04] [background-image:repeating-linear-gradient(0deg,transparent,transparent_31px,rgba(255,255,255,0.6)_31px,rgba(255,255,255,0.6)_32px),repeating-linear-gradient(90deg,transparent,transparent_31px,rgba(255,255,255,0.6)_31px,rgba(255,255,255,0.6)_32px)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_52%_at_18%_22%,rgba(240,168,0,0.13),transparent_58%),radial-gradient(ellipse_76%_58%_at_12%_74%,rgba(24,168,0,0.12),transparent_62%),linear-gradient(135deg,#020500,#061506_48%,#151300)]" />
+        <div className="pointer-events-none absolute inset-0 opacity-[0.07] [background-image:repeating-linear-gradient(0deg,transparent,transparent_31px,rgba(240,216,24,0.35)_31px,rgba(240,216,24,0.35)_32px),repeating-linear-gradient(90deg,transparent,transparent_31px,rgba(96,216,24,0.28)_31px,rgba(96,216,24,0.28)_32px)]" />
 
         {/* Left panel */}
         <motion.div
           initial={{ opacity: 0, x: -16 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.4, ease: 'easeOut' }}
-          className="relative flex w-[400px] shrink-0 flex-col border-r border-white/[0.06] max-lg:w-full"
+          className="relative flex w-[400px] shrink-0 flex-col border-r border-gold/10 bg-black/15 max-lg:w-full"
         >
           <div className="flex flex-1 flex-col overflow-y-auto p-6">
             {/* Header */}
-            <div className="mb-7 flex items-start justify-between">
-              <div>
-                <div className="mb-1 flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-[2px] bg-grass shadow-[0_0_8px_rgba(90,158,75,0.8)]" />
-                  <span className="text-[10px] font-bold uppercase tracking-[0.26em] text-white/35">
-                    Minecraft Java
-                  </span>
-                </div>
-                <h1 className="text-4xl font-black tracking-tight text-white">
-                  Rod
-                  <span className="text-grass">Launcher</span>
-                </h1>
-              </div>
+            <div className="mb-7 flex items-center justify-between gap-4">
+              <img
+                src={logo}
+                alt="RodLauncher"
+                className="h-48 w-full max-w-[640px] object-contain drop-shadow-[0_26px_54px_rgba(240,168,0,0.3)]"
+                draggable={false}
+              />
 
               <button
                 type="button"
                 onClick={() => void loadVersions()}
                 disabled={isLoadingVersions || isBusy}
-                className="mt-1 grid h-8 w-8 place-items-center rounded-lg border border-white/[0.07] bg-white/[0.03] text-white/30 transition hover:border-white/20 hover:text-white/70 disabled:cursor-not-allowed disabled:opacity-30"
+                className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-gold/15 bg-gold/[0.04] text-gold/45 transition hover:border-gold/35 hover:bg-gold/10 hover:text-glow disabled:cursor-not-allowed disabled:opacity-30"
                 title="Atualizar versões"
               >
                 <RefreshCw className={`h-3.5 w-3.5 ${isLoadingVersions ? 'animate-spin' : ''}`} />
@@ -222,7 +217,7 @@ export default function App() {
           </div>
 
           {/* Footer */}
-          <div className="shrink-0 border-t border-white/[0.06] px-6 py-4">
+          <div className="shrink-0 border-t border-gold/10 bg-black/10 px-6 py-4">
             {installDir && (
               <div className="mb-3 flex items-center gap-1.5 min-w-0">
                 <FolderOpen className="h-3.5 w-3.5 shrink-0 text-white/20" />

@@ -9,10 +9,10 @@ interface GraphicsSelectorProps {
 export default function GraphicsSelector({ value, onChange }: GraphicsSelectorProps) {
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-white/40">
+      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-gold/55">
         Renderização
       </label>
-      <div className="flex rounded-xl border border-white/[0.07] bg-white/[0.03] p-1">
+      <div className="flex rounded-xl border border-gold/10 bg-black/25 p-1">
         {(['opengl', 'vulkan'] as const).map((api) => (
           <button
             key={api}
@@ -20,8 +20,8 @@ export default function GraphicsSelector({ value, onChange }: GraphicsSelectorPr
             onClick={() => onChange(api)}
             className={`flex-1 rounded-lg py-2 text-xs font-bold uppercase tracking-[0.14em] transition ${
               value === api
-                ? 'bg-white/10 text-white shadow-sm'
-                : 'text-white/30 hover:text-white/60'
+                ? 'bg-gradient-to-r from-gold/20 to-moss/15 text-white shadow-[inset_0_0_0_1px_rgba(240,168,0,0.18)]'
+                : 'text-gold/35 hover:text-glow'
             }`}
           >
             {api}

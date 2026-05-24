@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import {
   getMinecraftRoot,
@@ -20,6 +21,7 @@ const createWindow = async () => {
     minHeight: 680,
     show: false,
     frame: false,
+    icon: getWindowIconPath(),
     backgroundColor: '#0D1117',
     title: 'RodLauncher',
     webPreferences: {
@@ -42,6 +44,15 @@ const createWindow = async () => {
     );
   }
 };
+
+function getWindowIconPath() {
+  const candidates = [
+    path.join(app.getAppPath(), 'src', 'renderer', 'assets', 'icon.png'),
+    path.join(process.cwd(), 'src', 'renderer', 'assets', 'icon.png'),
+  ];
+
+  return candidates.find((candidate) => existsSync(candidate)) ?? candidates[0];
+}
 
 app.whenReady().then(async () => {
   registerIpcHandlers();

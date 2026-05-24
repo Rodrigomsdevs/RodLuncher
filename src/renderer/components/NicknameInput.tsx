@@ -11,26 +11,26 @@ export default function NicknameInput({ value, isValid, onChange }: NicknameInpu
 
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-white/40">
+      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-gold/55">
         Nickname
       </label>
       <div
-        className={`flex items-center gap-3 rounded-xl border bg-white/[0.03] px-3.5 py-3 transition-colors focus-within:bg-white/[0.05] ${
+        className={`flex items-center gap-3 rounded-xl border bg-black/25 px-3.5 py-3 transition-colors focus-within:bg-gold/[0.04] ${
           showError
             ? 'border-ember/50 focus-within:border-ember/70'
             : isValid && value.length > 0
-              ? 'border-moss/40 focus-within:border-moss/60'
-              : 'border-white/[0.07] focus-within:border-white/20'
+              ? 'border-moss/45 focus-within:border-glow/70'
+              : 'border-gold/10 focus-within:border-gold/40'
         }`}
       >
-        <UserRound className="h-4 w-4 shrink-0 text-white/25" />
+        <UserRound className="h-4 w-4 shrink-0 text-gold/40" />
         <input
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Seu nick"
           spellCheck={false}
           maxLength={16}
-          className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-white outline-none placeholder:text-white/20"
+          className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-white outline-none placeholder:text-gold/25"
         />
         {value.length > 0 && (
           <span

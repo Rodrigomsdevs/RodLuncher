@@ -3,7 +3,7 @@ import logo from '../assets/logo.png';
 
 export default function TitleBar() {
   return (
-    <header className="app-drag flex h-9 shrink-0 select-none items-center justify-between border-b border-white/[0.06] bg-black/50 px-4 backdrop-blur-xl">
+    <header className="app-drag flex h-9 shrink-0 select-none items-center justify-between border-b border-gold/10 bg-black/70 px-4 backdrop-blur-xl">
       <div className="flex items-center gap-2">
         <img src={logo} alt="RodLauncher" className="h-7 w-auto object-contain" draggable={false} />
       </div>
@@ -12,7 +12,7 @@ export default function TitleBar() {
         <button
           type="button"
           onClick={() => void window.rodlauncher.minimize()}
-          className="grid h-9 w-10 place-items-center text-white/30 transition hover:bg-white/[0.06] hover:text-white/80"
+          className="grid h-9 w-10 place-items-center text-gold/35 transition hover:bg-gold/[0.08] hover:text-glow"
           title="Minimizar"
         >
           <Minus className="h-3.5 w-3.5" />
@@ -20,7 +20,7 @@ export default function TitleBar() {
         <button
           type="button"
           onClick={() => void window.rodlauncher.maximize()}
-          className="grid h-9 w-10 place-items-center text-white/30 transition hover:bg-white/[0.06] hover:text-white/80"
+          className="grid h-9 w-10 place-items-center text-gold/35 transition hover:bg-gold/[0.08] hover:text-glow"
           title="Maximizar"
         >
           <Square className="h-3 w-3" />
@@ -28,7 +28,7 @@ export default function TitleBar() {
         <button
           type="button"
           onClick={() => void window.rodlauncher.close()}
-          className="grid h-9 w-10 place-items-center text-white/30 transition hover:bg-ember/80 hover:text-white"
+          className="grid h-9 w-10 place-items-center text-gold/35 transition hover:bg-ember/80 hover:text-white"
           title="Fechar"
         >
           <X className="h-3.5 w-3.5" />

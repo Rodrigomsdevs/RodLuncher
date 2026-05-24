@@ -81,14 +81,14 @@ export default function SkinViewer3D({
     <div className="flex h-full flex-col">
       <div className="mb-3 flex shrink-0 items-center justify-between">
         <div className="min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">Skin</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gold/45">Skin</p>
           <h2 className="truncate text-lg font-black text-white">{username}</h2>
         </div>
         <div className="flex gap-1.5">
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="grid h-8 w-8 place-items-center rounded-lg border border-white/[0.07] bg-white/[0.04] text-white/40 transition hover:border-white/20 hover:text-white/80"
+            className="grid h-8 w-8 place-items-center rounded-lg border border-gold/10 bg-gold/[0.04] text-gold/45 transition hover:border-gold/35 hover:bg-gold/10 hover:text-glow"
             title="Carregar skin"
           >
             <Upload className="h-3.5 w-3.5" />
@@ -97,7 +97,7 @@ export default function SkinViewer3D({
             type="button"
             onClick={onResetSkin}
             disabled={!hasCustomSkin}
-            className="grid h-8 w-8 place-items-center rounded-lg border border-white/[0.07] bg-white/[0.04] text-white/40 transition hover:border-white/20 hover:text-white/80 disabled:cursor-not-allowed disabled:opacity-30"
+            className="grid h-8 w-8 place-items-center rounded-lg border border-gold/10 bg-gold/[0.04] text-gold/45 transition hover:border-gold/35 hover:bg-gold/10 hover:text-glow disabled:cursor-not-allowed disabled:opacity-30"
             title="Restaurar skin"
           >
             <RotateCcw className="h-3.5 w-3.5" />
@@ -107,7 +107,7 @@ export default function SkinViewer3D({
 
       <div ref={containerRef} className="relative min-h-0 flex-1 overflow-hidden">
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="h-2/3 w-1/2 rounded-full bg-moss/10 blur-3xl" />
+          <div className="h-2/3 w-1/2 rounded-full bg-[radial-gradient(circle,rgba(240,216,24,0.22),rgba(96,216,24,0.12)_48%,transparent_72%)] blur-3xl" />
         </div>
         <canvas ref={canvasRef} className="h-full w-full" />
       </div>
