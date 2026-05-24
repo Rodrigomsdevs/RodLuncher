@@ -83,6 +83,12 @@ Caso o Java nao esteja no PATH, crie um `.env` baseado no `.env.example` ou defi
 RODLAUNCHER_JAVA="C:\Program Files\Eclipse Adoptium\jdk-21\bin\java.exe"
 ```
 
+Se voce ja tem versoes baixadas em outra pasta, informe essa pasta para o RodLauncher verificar antes de baixar de novo:
+
+```bash
+RODLAUNCHER_MINECRAFT_DIR="C:\Users\seu-usuario\AppData\Roaming\.minecraft"
+```
+
 ## Instalar
 
 ```bash
@@ -138,7 +144,7 @@ O main process centraliza:
 
 ## Pasta local do Minecraft
 
-O RodLauncher usa uma instancia isolada dentro de `app.getPath("userData")`, evitando misturar arquivos com a instalacao oficial do Minecraft Launcher.
+O RodLauncher usa uma instancia isolada dentro de `app.getPath("userData")` para saves/logs do app, mas verifica tambem a `.minecraft` oficial do sistema e a pasta opcional `RODLAUNCHER_MINECRAFT_DIR` antes de baixar uma versao.
 
 ## Fontes e APIs
 
