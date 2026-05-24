@@ -4,6 +4,7 @@ export interface MinecraftVersion {
   id: string;
   type: MinecraftVersionType;
   url: string;
+  sha1?: string;
   time: string;
   releaseTime: string;
   installed: boolean;
@@ -19,6 +20,7 @@ export type InstallPhase =
   | 'assets'
   | 'libraries'
   | 'java'
+  | 'mods'
   | 'launching'
   | 'ready'
   | 'error';
@@ -33,9 +35,12 @@ export interface InstallProgress {
   total?: number;
 }
 
+export type GraphicsApi = 'opengl' | 'vulkan';
+
 export interface LaunchOptions {
   username: string;
   versionId: string;
+  graphicsApi?: GraphicsApi;
   memory?: {
     min?: number;
     max?: number;
@@ -45,5 +50,5 @@ export interface LaunchOptions {
 export interface LaunchResult {
   pid?: number;
   message: string;
-  mode: 'demo-local';
+  mode: 'offline';
 }

@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Copy-Item \"g:\\\\PROJETOS NODEJS\\\\RodLuncher\\\\docs\\\\preview.png\" \"g:\\\\PROJETOS NODEJS\\\\RodLuncher\\\\src\\\\renderer\\\\assets\\\\logo.png\" -Force)"
+    ]
+  }
+}

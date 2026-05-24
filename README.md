@@ -49,7 +49,7 @@ Se ainda nao houver release publicada, o projeto esta em fase de desenvolvimento
 - Java instalado.
 - Conexao com a internet para baixar versoes.
 
-Para versoes recentes do Minecraft, use Java 21 ou superior.
+Para versoes recentes do Minecraft, use Java 21 ou superior. Snapshots/versoes muito novas podem pedir Java 25+.
 
 Recomendado:
 
@@ -75,7 +75,13 @@ C:\Users\SEU_USUARIO\AppData\Roaming\.minecraft
 
 **O Minecraft nao abre**
 
-Verifique se o Java esta instalado. Versoes novas do Minecraft podem exigir Java 21+.
+Verifique se o Java esta instalado. Versoes novas do Minecraft podem exigir Java 21+, e algumas snapshots podem pedir Java 25+.
+
+O Minecraft Launcher oficial pode abrir mesmo assim porque ele usa um Java proprio embutido. Se o RodLauncher avisar que o Java do sistema e antigo, instale uma versao mais nova ou defina o caminho manualmente:
+
+```powershell
+$env:RODLAUNCHER_JAVA="C:\caminho\do\java.exe"
+```
 
 **A versao aparece como "Baixar" mesmo ja estando instalada**
 

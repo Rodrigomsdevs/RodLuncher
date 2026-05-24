@@ -4,7 +4,7 @@ import path from 'node:path';
 import {
   getMinecraftRoot,
   installVersion,
-  launchGame,
+  launchOffline,
   listVersions,
 } from './minecraft';
 import type { LaunchOptions } from '../shared/types';
@@ -36,7 +36,6 @@ const createWindow = async () => {
 
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     await mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
-    mainWindow.webContents.openDevTools({ mode: 'detach' });
   } else {
     await mainWindow.loadFile(
       path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`),
@@ -94,8 +93,10 @@ function registerIpcHandlers() {
     });
   });
   ipcMain.handle('minecraft:launch', async (event, options: LaunchOptions) => {
-    return launchGame(options, (progress) => {
-      event.sender.send('minecraft:install-progress', progress);
-    });
+    return launchOffline(
+      options,
+      (progress) => event.sender.send('minecraft:install-progress', progress),
+      (code) => event.sender.send('minecraft:game-closed', { code }),
+    );
   });
 }

@@ -1,29 +1,53 @@
-import { Download, Loader2, Play } from 'lucide-react';
+import { Download, Gamepad2, Loader2, Play } from 'lucide-react';
 
 interface PlayButtonProps {
   disabled: boolean;
   loading: boolean;
+  gameRunning: boolean;
   installed: boolean;
   onClick: () => void;
 }
 
-export default function PlayButton({ disabled, loading, installed, onClick }: PlayButtonProps) {
+export default function PlayButton({
+  disabled,
+  loading,
+  gameRunning,
+  installed,
+  onClick,
+}: PlayButtonProps) {
+  const icon = loading ? (
+    <Loader2 className="h-4 w-4 animate-spin" />
+  ) : gameRunning ? (
+    <Gamepad2 className="h-4 w-4" />
+  ) : installed ? (
+    <Play className="h-4 w-4 fill-current" />
+  ) : (
+    <Download className="h-4 w-4" />
+  );
+
+  const label = loading
+    ? 'Aguarde...'
+    : gameRunning
+      ? 'Jogando'
+      : installed
+        ? 'Jogar'
+        : 'Baixar e Jogar';
+
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="group relative flex h-14 min-w-48 items-center justify-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-r from-grass via-[#6FB956] to-[#D9A441] px-7 text-base font-black uppercase tracking-[0.14em] text-white shadow-[0_18px_42px_rgba(90,158,75,.28)] transition hover:-translate-y-0.5 hover:shadow-[0_20px_48px_rgba(90,158,75,.36)] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+      className={`flex w-full items-center justify-center gap-2.5 rounded-xl px-6 py-3.5 text-sm font-bold uppercase tracking-[0.12em] transition-all ${
+        gameRunning
+          ? 'cursor-default border border-moss/30 bg-moss/10 text-moss/70'
+          : disabled
+            ? 'cursor-not-allowed border border-white/[0.06] bg-white/[0.03] text-white/20'
+            : 'border border-grass/30 bg-gradient-to-r from-grass to-[#4a8a3b] text-white shadow-lg shadow-grass/20 hover:-translate-y-0.5 hover:shadow-grass/30 active:translate-y-0'
+      }`}
     >
-      <span className="absolute inset-0 bg-white/0 transition group-hover:bg-white/10" />
-      {loading ? (
-        <Loader2 className="relative h-5 w-5 animate-spin" />
-      ) : installed ? (
-        <Play className="relative h-5 w-5 fill-white" />
-      ) : (
-        <Download className="relative h-5 w-5" />
-      )}
-      <span className="relative">{loading ? 'Aguarde' : installed ? 'Jogar' : 'Baixar'}</span>
+      {icon}
+      {label}
     </button>
   );
 }

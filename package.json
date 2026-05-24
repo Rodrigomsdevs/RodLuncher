@@ -12,7 +12,8 @@
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "release": "electron-forge publish"
   },
   "dependencies": {
     "@xmcl/core": "latest",
@@ -25,8 +26,6 @@
     "skinview3d": "latest"
   },
   "devDependencies": {
-    "@electron-forge/shared-types": "latest",
-    "@eslint/js": "latest",
     "@electron-forge/cli": "latest",
     "@electron-forge/maker-deb": "latest",
     "@electron-forge/maker-rpm": "latest",
@@ -34,6 +33,9 @@
     "@electron-forge/maker-zip": "latest",
     "@electron-forge/plugin-auto-unpack-natives": "latest",
     "@electron-forge/plugin-vite": "latest",
+    "@electron-forge/publisher-github": "^7.11.2",
+    "@electron-forge/shared-types": "latest",
+    "@eslint/js": "latest",
     "@tailwindcss/vite": "latest",
     "@types/node": "latest",
     "@types/react": "latest",

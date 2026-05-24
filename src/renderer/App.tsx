@@ -1,37 +1,48 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertTriangle, CheckCircle2, FolderOpen, RefreshCw } from 'lucide-react';
+import {
+  AlertTriangle,
+  CheckCircle2,
+  FolderOpen,
+  RefreshCw,
+} from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import type { GraphicsApi, InstallProgress, MinecraftVersion } from '../shared/types';
+import GraphicsSelector from './components/GraphicsSelector';
 import NicknameInput from './components/NicknameInput';
 import PlayButton from './components/PlayButton';
 import ProgressBar from './components/ProgressBar';
 import SkinViewer3D from './components/SkinViewer3D';
 import TitleBar from './components/TitleBar';
 import VersionSelector from './components/VersionSelector';
-import type { InstallProgress, MinecraftVersion } from '../shared/types';
 
 const DEFAULT_SKIN_URL = 'https://minotar.net/skin/Steve';
 const NICKNAME_PATTERN = /^[A-Za-z0-9_]{3,16}$/;
 
 export default function App() {
-  const [nickname, setNickname] = useState('');
+  const [nickname, setNickname] = useState(
+    () => localStorage.getItem('rodlauncher:nickname') ?? '',
+  );
+  const [graphicsApi, setGraphicsApi] = useState<GraphicsApi>(
+    () => (localStorage.getItem('rodlauncher:graphics') as GraphicsApi | null) ?? 'opengl',
+  );
   const [versions, setVersions] = useState<MinecraftVersion[]>([]);
   const [selectedVersion, setSelectedVersion] = useState('');
   const [includeSnapshots, setIncludeSnapshots] = useState(false);
   const [customSkin, setCustomSkin] = useState<string | null>(null);
   const [progress, setProgress] = useState<InstallProgress>({
     phase: 'idle',
-    status: 'Pronto',
+    status: '',
     percentage: 0,
   });
   const [installDir, setInstallDir] = useState('');
   const [isLoadingVersions, setIsLoadingVersions] = useState(true);
   const [isBusy, setIsBusy] = useState(false);
+  const [gameRunning, setGameRunning] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
   const nicknameIsValid = NICKNAME_PATTERN.test(nickname);
-  const selectedVersionInfo = versions.find((version) => version.id === selectedVersion);
-
+  const selectedVersionInfo = versions.find((v) => v.id === selectedVersion);
   const skinUrl = useMemo(() => {
     if (customSkin) return customSkin;
     if (nicknameIsValid) return `https://minotar.net/skin/${encodeURIComponent(nickname)}`;
@@ -39,31 +50,37 @@ export default function App() {
   }, [customSkin, nickname, nicknameIsValid]);
 
   useEffect(() => {
-    const dispose = window.rodlauncher.onInstallProgress((nextProgress) => {
-      setProgress(nextProgress);
+    const disposeProgress = window.rodlauncher.onInstallProgress(setProgress);
+    const disposeGameClosed = window.rodlauncher.onGameClosed(() => {
+      setGameRunning(false);
+      setSuccess('Jogo encerrado. Pronto para jogar novamente.');
+      void loadVersions();
     });
-
-    return dispose;
+    return () => {
+      disposeProgress();
+      disposeGameClosed();
+    };
   }, []);
 
   useEffect(() => {
     void loadVersions();
-    void window.rodlauncher.getInstallDirectory().then(setInstallDir).catch(() => setInstallDir(''));
+    void window.rodlauncher
+      .getInstallDirectory()
+      .then(setInstallDir)
+      .catch(() => setInstallDir(''));
   }, []);
 
   async function loadVersions() {
     setIsLoadingVersions(true);
-    setError('');
-
     try {
-      const nextVersions = await window.rodlauncher.listVersions();
-      setVersions(nextVersions);
-      setSelectedVersion((current) => {
-        if (current) return current;
-        return nextVersions.find((version) => version.type === 'release')?.id ?? '';
+      const next = await window.rodlauncher.listVersions();
+      setVersions(next);
+      setSelectedVersion((cur) => {
+        if (cur) return cur;
+        return next.find((v) => v.type === 'release')?.id ?? '';
       });
-    } catch (caughtError) {
-      setError(getErrorMessage(caughtError));
+    } catch (e) {
+      setError(getErrorMessage(e));
     } finally {
       setIsLoadingVersions(false);
     }
@@ -74,79 +91,87 @@ export default function App() {
     setSuccess('');
 
     if (!nicknameIsValid) {
-      setError('Use um nick com 3 a 16 caracteres, somente letras, numeros e underline.');
+      setError('Use um nick com 3–16 caracteres: letras, números e underline.');
       return;
     }
-
     if (!selectedVersion) {
-      setError('Escolha uma versao do Minecraft.');
+      setError('Escolha uma versão do Minecraft.');
       return;
     }
 
     setIsBusy(true);
-
     try {
-      if (!selectedVersionInfo?.installed) {
-        await window.rodlauncher.installVersion(selectedVersion);
-      }
-
       const result = await window.rodlauncher.launchGame({
         username: nickname,
         versionId: selectedVersion,
-        memory: {
-          min: 512,
-          max: 2048,
-        },
+        graphicsApi,
+        memory: { min: 512, max: 2048 },
       });
-
       setSuccess(result.message);
+      setGameRunning(true);
       await loadVersions();
-    } catch (caughtError) {
-      setError(getErrorMessage(caughtError));
+    } catch (e) {
+      setError(getErrorMessage(e));
     } finally {
       setIsBusy(false);
     }
   }
 
+  const showProgress = isBusy && progress.phase !== 'idle';
+
   return (
-    <div className="min-h-screen overflow-hidden bg-night text-zinc-100">
+    <div className="flex h-screen flex-col overflow-hidden bg-[#080d08] text-white">
       <TitleBar />
 
-      <main className="relative min-h-[calc(100vh-40px)] px-6 pb-6 pt-4">
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(135deg,#0D1117_0%,#142014_42%,#21180f_100%)]" />
-        <div className="absolute inset-0 -z-10 opacity-[0.13] [background-image:linear-gradient(90deg,rgba(255,255,255,.16)_1px,transparent_1px),linear-gradient(rgba(255,255,255,.14)_1px,transparent_1px)] [background-size:34px_34px]" />
+      <div className="relative flex min-h-0 flex-1">
+        {/* Background */}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_20%_50%,rgba(90,158,75,0.06),transparent)]" />
+        <div className="pointer-events-none absolute inset-0 opacity-[0.04] [background-image:repeating-linear-gradient(0deg,transparent,transparent_31px,rgba(255,255,255,0.6)_31px,rgba(255,255,255,0.6)_32px),repeating-linear-gradient(90deg,transparent,transparent_31px,rgba(255,255,255,0.6)_31px,rgba(255,255,255,0.6)_32px)]" />
 
-        <section className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_390px] gap-5 max-lg:grid-cols-1">
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, ease: 'easeOut' }}
-            className="rounded-[28px] border border-white/10 bg-white/[0.055] p-7 shadow-2xl shadow-black/30 backdrop-blur-2xl"
-          >
-            <header className="mb-8 flex items-start justify-between gap-4">
+        {/* Left panel */}
+        <motion.div
+          initial={{ opacity: 0, x: -16 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
+          className="relative flex w-[400px] shrink-0 flex-col border-r border-white/[0.06] max-lg:w-full"
+        >
+          <div className="flex flex-1 flex-col overflow-y-auto p-6">
+            {/* Header */}
+            <div className="mb-7 flex items-start justify-between">
               <div>
-                <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-moss">
-                  <span className="h-2 w-2 rounded-sm bg-moss shadow-[0_0_18px_rgba(141,211,107,.8)]" />
-                  Minecraft Java
+                <div className="mb-1 flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-[2px] bg-grass shadow-[0_0_8px_rgba(90,158,75,0.8)]" />
+                  <span className="text-[10px] font-bold uppercase tracking-[0.26em] text-white/35">
+                    Minecraft Java
+                  </span>
                 </div>
-                <h1 className="text-5xl font-black tracking-normal text-white max-sm:text-4xl">
-                  Rod<span className="bg-gradient-to-r from-moss via-grass to-[#E6B86A] bg-clip-text text-transparent">Launcher</span>
+                <h1 className="text-4xl font-black tracking-tight text-white">
+                  Rod
+                  <span className="text-grass">Launcher</span>
                 </h1>
               </div>
 
               <button
                 type="button"
-                onClick={loadVersions}
+                onClick={() => void loadVersions()}
                 disabled={isLoadingVersions || isBusy}
-                className="grid h-11 w-11 place-items-center rounded-xl border border-white/10 bg-white/10 text-zinc-200 transition hover:border-moss/40 hover:text-moss disabled:cursor-not-allowed disabled:opacity-50"
-                title="Atualizar versoes"
+                className="mt-1 grid h-8 w-8 place-items-center rounded-lg border border-white/[0.07] bg-white/[0.03] text-white/30 transition hover:border-white/20 hover:text-white/70 disabled:cursor-not-allowed disabled:opacity-30"
+                title="Atualizar versões"
               >
-                <RefreshCw className={`h-4 w-4 ${isLoadingVersions ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`h-3.5 w-3.5 ${isLoadingVersions ? 'animate-spin' : ''}`} />
               </button>
-            </header>
+            </div>
 
-            <div className="grid gap-5">
-              <NicknameInput value={nickname} onChange={setNickname} isValid={nicknameIsValid} />
+            {/* Form */}
+            <div className="flex flex-col gap-4">
+              <NicknameInput
+                value={nickname}
+                isValid={nicknameIsValid}
+                onChange={(v) => {
+                  setNickname(v);
+                  localStorage.setItem('rodlauncher:nickname', v);
+                }}
+              />
 
               <VersionSelector
                 versions={versions}
@@ -157,74 +182,84 @@ export default function App() {
                 onToggleSnapshots={setIncludeSnapshots}
               />
 
-              <ProgressBar progress={progress} visible={isBusy || progress.phase !== 'idle'} />
+              <GraphicsSelector
+                value={graphicsApi}
+                onChange={(v) => {
+                  setGraphicsApi(v);
+                  localStorage.setItem('rodlauncher:graphics', v);
+                }}
+              />
 
+              <ProgressBar progress={progress} visible={showProgress} />
+
+              {/* Feedback */}
               <AnimatePresence mode="wait">
                 {error ? (
                   <motion.div
                     key="error"
-                    initial={{ opacity: 0, y: 8 }}
+                    initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    className="flex items-center gap-3 rounded-2xl border border-ember/40 bg-ember/10 px-4 py-3 text-sm text-red-100"
+                    exit={{ opacity: 0, y: -6 }}
+                    className="flex items-start gap-2.5 rounded-xl border border-ember/25 bg-ember/[0.08] px-3.5 py-3"
                   >
-                    <AlertTriangle className="h-4 w-4 shrink-0 text-ember" />
-                    <span>{error}</span>
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-ember/80" />
+                    <p className="text-xs leading-relaxed text-white/70">{error}</p>
                   </motion.div>
                 ) : success ? (
                   <motion.div
                     key="success"
-                    initial={{ opacity: 0, y: 8 }}
+                    initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    className="flex items-center gap-3 rounded-2xl border border-moss/40 bg-moss/10 px-4 py-3 text-sm text-green-100"
+                    exit={{ opacity: 0, y: -6 }}
+                    className="flex items-center gap-2.5 rounded-xl border border-moss/25 bg-moss/[0.07] px-3.5 py-3"
                   >
-                    <CheckCircle2 className="h-4 w-4 shrink-0 text-moss" />
-                    <span>{success}</span>
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-moss/80" />
+                    <p className="text-xs text-white/70">{success}</p>
                   </motion.div>
                 ) : null}
               </AnimatePresence>
-
-              <div className="flex items-center justify-between gap-4 pt-2 max-sm:flex-col max-sm:items-stretch">
-                <div className="min-w-0 text-xs text-zinc-400">
-                  <div className="mb-1 flex items-center gap-2 text-zinc-300">
-                    <FolderOpen className="h-3.5 w-3.5 text-moss" />
-                    <span className="font-medium">Instancia local</span>
-                  </div>
-                  <p className="truncate">{installDir || 'Carregando pasta...'}</p>
-                </div>
-
-                <PlayButton
-                  disabled={!nicknameIsValid || !selectedVersion || isBusy}
-                  loading={isBusy}
-                  installed={Boolean(selectedVersionInfo?.installed)}
-                  onClick={handlePlay}
-                />
-              </div>
             </div>
-          </motion.div>
+          </div>
 
-          <motion.aside
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.06, ease: 'easeOut' }}
-            className="rounded-[28px] border border-white/10 bg-black/20 p-5 shadow-2xl shadow-black/30 backdrop-blur-2xl"
-          >
-            <SkinViewer3D
-              username={nicknameIsValid ? nickname : 'Steve'}
-              skinUrl={skinUrl}
-              hasCustomSkin={Boolean(customSkin)}
-              onSkinLoaded={setCustomSkin}
-              onResetSkin={() => setCustomSkin(null)}
+          {/* Footer */}
+          <div className="shrink-0 border-t border-white/[0.06] px-6 py-4">
+            {installDir && (
+              <div className="mb-3 flex items-center gap-1.5 min-w-0">
+                <FolderOpen className="h-3.5 w-3.5 shrink-0 text-white/20" />
+                <span className="truncate text-[11px] text-white/25">{installDir}</span>
+              </div>
+            )}
+            <PlayButton
+              disabled={!nicknameIsValid || !selectedVersion || isBusy || gameRunning}
+              loading={isBusy}
+              gameRunning={gameRunning}
+              installed={Boolean(selectedVersionInfo?.installed)}
+              onClick={() => void handlePlay()}
             />
-          </motion.aside>
-        </section>
-      </main>
+          </div>
+        </motion.div>
+
+        {/* Right panel — skin viewer */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="relative min-w-0 flex-1 p-6 max-lg:hidden"
+        >
+          <SkinViewer3D
+            username={nicknameIsValid ? nickname : 'Steve'}
+            skinUrl={skinUrl}
+            hasCustomSkin={Boolean(customSkin)}
+            onSkinLoaded={setCustomSkin}
+            onResetSkin={() => setCustomSkin(null)}
+          />
+        </motion.div>
+      </div>
     </div>
   );
 }
 
-function getErrorMessage(error: unknown) {
-  if (error instanceof Error) return error.message;
-  return String(error);
+function getErrorMessage(e: unknown) {
+  if (e instanceof Error) return e.message;
+  return String(e);
 }

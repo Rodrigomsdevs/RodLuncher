@@ -17,91 +17,99 @@ export default function SkinViewer3D({
   onSkinLoaded,
   onResetSkin,
 }: SkinViewer3DProps) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<SkinViewer | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [skinError, setSkinError] = useState('');
 
   useEffect(() => {
-    if (!canvasRef.current) return undefined;
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
+    if (!canvas || !container) return;
+
+    const { clientWidth: w, clientHeight: h } = container;
 
     const viewer = new SkinViewer({
-      canvas: canvasRef.current,
-      width: 340,
-      height: 460,
+      canvas,
+      width: Math.max(w, 80),
+      height: Math.max(h, 80),
       skin: skinUrl,
     });
 
     viewerRef.current = viewer;
     viewer.animation = new WalkingAnimation();
-    viewer.animation.speed = 0.58;
+    viewer.animation.speed = 0.55;
     viewer.controls.enableRotate = true;
     viewer.controls.enableZoom = false;
     viewer.autoRotate = true;
-    viewer.autoRotateSpeed = 0.55;
+    viewer.autoRotateSpeed = 0.5;
     viewer.camera.position.set(0, 18, 42);
     viewer.camera.rotation.x = -0.08;
-    viewer.globalLight.intensity = 0.72;
-    viewer.cameraLight.intensity = 0.9;
+    viewer.globalLight.intensity = 0.7;
+    viewer.cameraLight.intensity = 0.85;
+
+    const observer = new ResizeObserver(() => {
+      const { clientWidth: nw, clientHeight: nh } = container;
+      if (nw > 0 && nh > 0) viewer.setSize(nw, nh);
+    });
+    observer.observe(container);
 
     return () => {
+      observer.disconnect();
       viewer.dispose();
       viewerRef.current = null;
     };
   }, [skinUrl]);
 
-  function handleSkinFile(file?: File) {
+  function handleFile(file?: File) {
     setSkinError('');
-
     if (!file) return;
-
     if (file.type !== 'image/png') {
-      setSkinError('Escolha uma skin PNG.');
+      setSkinError('Use uma skin em PNG.');
       return;
     }
-
     const reader = new FileReader();
     reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        onSkinLoaded(reader.result);
-      }
+      if (typeof reader.result === 'string') onSkinLoaded(reader.result);
     };
-    reader.onerror = () => setSkinError('Nao foi possivel carregar a skin.');
+    reader.onerror = () => setSkinError('Não foi possível carregar a skin.');
     reader.readAsDataURL(file);
   }
 
   return (
-    <div className="flex h-full min-h-[620px] flex-col max-lg:min-h-[520px]">
-      <div className="mb-4 flex items-start justify-between gap-3">
+    <div className="flex h-full flex-col">
+      <div className="mb-3 flex shrink-0 items-center justify-between">
         <div className="min-w-0">
-          <div className="text-xs font-semibold uppercase tracking-[0.24em] text-moss">Skin</div>
-          <h2 className="truncate text-2xl font-black text-white">{username}</h2>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">Skin</p>
+          <h2 className="truncate text-lg font-black text-white">{username}</h2>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-1.5">
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/10 text-zinc-200 transition hover:border-moss/50 hover:text-moss"
+            className="grid h-8 w-8 place-items-center rounded-lg border border-white/[0.07] bg-white/[0.04] text-white/40 transition hover:border-white/20 hover:text-white/80"
             title="Carregar skin"
           >
-            <Upload className="h-4 w-4" />
+            <Upload className="h-3.5 w-3.5" />
           </button>
           <button
             type="button"
             onClick={onResetSkin}
             disabled={!hasCustomSkin}
-            className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/10 text-zinc-200 transition hover:border-dirt/60 hover:text-[#E6B86A] disabled:cursor-not-allowed disabled:opacity-40"
+            className="grid h-8 w-8 place-items-center rounded-lg border border-white/[0.07] bg-white/[0.04] text-white/40 transition hover:border-white/20 hover:text-white/80 disabled:cursor-not-allowed disabled:opacity-30"
             title="Restaurar skin"
           >
-            <RotateCcw className="h-4 w-4" />
+            <RotateCcw className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
 
-      <div className="relative grid flex-1 place-items-center overflow-visible">
-        <div className="pointer-events-none absolute h-[78%] w-[82%] rounded-full bg-moss/20 blur-3xl" />
-        <div className="pointer-events-none absolute bottom-12 h-28 w-56 rounded-full bg-black/35 blur-2xl" />
-        <canvas ref={canvasRef} className="relative z-10 h-full max-h-[460px] w-full max-w-[340px]" />
+      <div ref={containerRef} className="relative min-h-0 flex-1 overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="h-2/3 w-1/2 rounded-full bg-moss/10 blur-3xl" />
+        </div>
+        <canvas ref={canvasRef} className="h-full w-full" />
       </div>
 
       <input
@@ -109,10 +117,12 @@ export default function SkinViewer3D({
         type="file"
         accept="image/png"
         className="hidden"
-        onChange={(event) => handleSkinFile(event.target.files?.[0])}
+        onChange={(e) => handleFile(e.target.files?.[0])}
       />
 
-      <div className="mt-3 h-4 text-xs text-ember">{skinError}</div>
+      {skinError && (
+        <p className="mt-2 shrink-0 text-[11px] text-ember/80">{skinError}</p>
+      )}
     </div>
   );
 }

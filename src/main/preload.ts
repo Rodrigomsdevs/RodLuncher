@@ -24,6 +24,17 @@ const rodlauncher = {
       ipcRenderer.removeListener('minecraft:install-progress', listener);
     };
   },
+  onGameClosed: (callback: (data: { code: number | null }) => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, data: { code: number | null }) => {
+      callback(data);
+    };
+
+    ipcRenderer.on('minecraft:game-closed', listener);
+
+    return () => {
+      ipcRenderer.removeListener('minecraft:game-closed', listener);
+    };
+  },
   minimize: (): Promise<void> => ipcRenderer.invoke('window:minimize'),
   maximize: (): Promise<boolean> => ipcRenderer.invoke('window:maximize'),
   close: (): Promise<void> => ipcRenderer.invoke('window:close'),
