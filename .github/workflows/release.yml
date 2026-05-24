@@ -17,16 +17,19 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
         run: npm ci
 
+      - name: Typecheck
+        run: npm run typecheck
+
       - name: Make
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run make
+        run: npm run make -- --platform=win32
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -42,29 +45,32 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install system dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y rpm fakeroot dpkg
+          sudo apt-get update -y
+          sudo apt-get install -y rpm fakeroot dpkg build-essential libgtk-3-0 libnotify-dev libnss3 libxss1 libxtst6 xauth xvfb
 
       - name: Install dependencies
         run: npm ci
 
+      - name: Typecheck
+        run: npm run typecheck
+
       - name: Make
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run make
+        run: npm run make -- --platform=linux
 
-      - name: Upload deb artifact
+      - name: Upload deb
         uses: actions/upload-artifact@v4
         with:
           name: linux-deb
           path: out/make/deb/**/*.deb
 
-      - name: Upload rpm artifact
+      - name: Upload rpm
         uses: actions/upload-artifact@v4
         with:
           name: linux-rpm
