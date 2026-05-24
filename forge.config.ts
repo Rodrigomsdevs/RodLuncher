@@ -5,6 +5,11 @@ import { MakerSquirrel } from '@electron-forge/maker-squirrel';
 import { MakerZIP } from '@electron-forge/maker-zip';
 import { MakerDeb } from '@electron-forge/maker-deb';
 import { MakerRpm } from '@electron-forge/maker-rpm';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const projectRoot = path.dirname(fileURLToPath(import.meta.url));
+const assetPath = (asset: string) => path.resolve(projectRoot, asset);
 
 const config: ForgeConfig = {
   packagerConfig: {
@@ -12,14 +17,15 @@ const config: ForgeConfig = {
     executableName: 'RodLauncher',
     name: 'RodLauncher',
     appVersion: '0.1.0',
-    icon: 'src/renderer/assets/icon.png',
+    icon: assetPath('src/renderer/assets/icon'),
   },
   rebuildConfig: {},
   makers: [
     new MakerSquirrel({
       name: 'RodLauncher',
       setupExe: 'RodLauncher-Setup.exe',
-      setupIcon: 'src/renderer/assets/icon.ico',
+      setupIcon: assetPath('src/renderer/assets/icon.ico'),
+      loadingGif: assetPath('src/renderer/assets/installer-loading.gif'),
       noMsi: true,
     }),
     new MakerZIP({}, ['darwin', 'win32']),
