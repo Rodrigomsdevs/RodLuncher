@@ -28,6 +28,7 @@
   "devDependencies": {
     "@electron-forge/cli": "latest",
     "@electron-forge/maker-deb": "latest",
+    "@electron-forge/maker-dmg": "^7.11.2",
     "@electron-forge/maker-rpm": "latest",
     "@electron-forge/maker-squirrel": "latest",
     "@electron-forge/maker-zip": "latest",
